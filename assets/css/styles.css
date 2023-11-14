@@ -24,12 +24,6 @@ html, body {
     animation-duration: .2s;
 }
 
-/*@keyframes slideLeft {*/
-/*    from{*/
-/*        opacity: 0;*/
-/*        margin-left: 0;*/
-/*    }*/
-/*}*/
 
 /* ASIGNAR ALTURA FIJA DEL DIV PARA CUANDO NO CONTENGA IMÁGENES DE CARTAS */
 #computadora-cartas, #jugador-cartas {
