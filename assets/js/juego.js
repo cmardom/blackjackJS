@@ -7,19 +7,27 @@ document.addEventListener("DOMContentLoaded", function(){
     const btnPedir          = document.getElementById('btnPedir');
     const btnDetener        = document.getElementById('btnDetener');
     const estado            = document.getElementById('estado');
-    let puntosJugador     = document.getElementById('puntosJugador');
+    const puntosJugador     = document.getElementById('puntosJugador');
     const puntosComputadora = document.getElementById('puntosComputadora');
 
+    estado.innerText = "Turno Jugador1";
+    let marcadorComputadora = 0;
+    let marcadorJugador = 0;
     let barajaBarajada = generarBaraja();
     console.log(barajaBarajada);
 
-    //you need to pass a function reference that will be called when the event occurs.
+
     btnPedir.addEventListener('click', function() {
-        let puntosActualesJugador;
-        do {
-            let carta = repartirCarta(jugadorCartas, barajaBarajada);
-            puntosActualesJugador = escribirPuntos(puntosJugador, calcularPuntosDeCarta(carta));
-        } while (puntosActualesJugador <= 21);
+
+        let carta = repartirCarta(jugadorCartas, barajaBarajada);
+        let puntosCarta = calcularPuntosDeCarta(carta);
+        marcadorJugador+=puntosCarta;
+        escribirPuntos(puntosJugador, marcadorJugador);
+
+
+        if (marcadorJugador >=21){
+            btnPedir.disabled = true;
+        }
 
 
     });
@@ -27,34 +35,43 @@ document.addEventListener("DOMContentLoaded", function(){
 
     btnDetener.addEventListener('click', function (){
         estado.innerText = "Turno de computadora";
-        let puntosActualesComputadora;
-        do{
+        do {
             let carta = repartirCarta(computadoraCartas, barajaBarajada);
-            puntosActualesComputadora = escribirPuntos(puntosComputadora, calcularPuntosDeCarta(carta));
+            let puntosCarta = calcularPuntosDeCarta(carta);
+            marcadorComputadora+=puntosCarta;
+            escribirPuntos(puntosComputadora, marcadorComputadora);
 
-        } while (puntosActualesComputadora <= 21);
 
 
+
+
+        } while (marcadorComputadora <=21)
+
+        comprobarGanador(marcadorJugador, marcadorComputadora, estado);
     });
 
 
     btnNuevo.addEventListener('click', function(){
-        puntosJugador.innerText = "0";
-        while (jugadorCartas.firstChild){
-            jugadorCartas.removeChild(jugadorCartas.firstChild);
-        }
-
-        puntosComputadora.innerText = "0";
-        while (computadoraCartas.firstChild){
-            computadoraCartas.removeChild(computadoraCartas.firstChild);
-        }
-
-        generarBaraja();
+        location.reload();
     });
 
+
+    comprobarGanador(marcadorJugador, marcadorComputadora, estado);
 });
 
 
+
+function comprobarGanador (marcadorJugador, marcadorComputadora, estado){
+    if (marcadorJugador === 0){
+        estado.innerText = "Turno Jugador 1";
+    } else if (marcadorJugador >= 21){
+        estado.innerText = "Pierde Jugador 1";
+    } else if (marcadorJugador < marcadorComputadora){
+        estado.innerText = "Gana Jugador 1";
+    } else {
+        estado.innerText = "Gana Computadora";
+    }
+}
 
 function generarBaraja(){
     const palos = "CDHS".split('');
@@ -78,15 +95,14 @@ function generarBaraja(){
     }
 
     return _.shuffle(baraja);
-
 }
 
 function generarRutaImagen (carta){
     const img = document.createElement('img');
     img.setAttribute('src', `assets/cartas/${carta}.png`);
     img.classList.add('carta');
-    return img;
 
+    return img;
 }
 
 
@@ -94,14 +110,15 @@ function calcularPuntosDeCarta (carta){
     const numeroCarta = carta.substring(0, carta.length-1);
     let valorCarta = parseInt(numeroCarta);
 
-    if(isNaN(numeroCarta)){
+    if(isNaN(valorCarta)){
         const letra = numeroCarta.toUpperCase();
-        switch (letra){
+        console.log("letra?" + letra);
 
-            case "A": return 11;
-            case "J":
-            case "Q":
-            case "K":
+        switch (letra){
+            case 'A': return 11;
+            case 'J':
+            case 'Q':
+            case 'K':
                 return 10;
         }
     } else {
@@ -109,11 +126,20 @@ function calcularPuntosDeCarta (carta){
     }
 }
 
+function calcularPuntosDeTodasLasCartas (cartaAnterior, cartaActual){
+    const puntosCartaAnterior = calcularPuntosDeCarta(cartaAnterior);
+    const puntosCartaActual = calcularPuntosDeCarta(cartaActual);
+
+    return puntosCartaAnterior + puntosCartaActual;
+}
+
+
+
 function repartirCarta (contenedor, baraja){
     const carta = baraja.shift();
     contenedor.append(generarRutaImagen(carta));
-    return carta;
 
+    return carta;
 }
 
 // function detener(btnPedir, btnDetener){
@@ -122,13 +148,18 @@ function repartirCarta (contenedor, baraja){
 // }
 
 function escribirPuntos (contenedor, puntos){
-    return contenedor.innerHTML = parseInt(contenedor.innerText) + puntos;
+    console.log("puntos> " + puntos);
+    console.log("contenedor> " + contenedor);
+    contenedor.innerText = puntos;
+
 }
 
 function comprobarPuntos (puntos, elemento){
     if (puntos >= 21){
         elemento.innerText = "Has perdido";
     }
+
+    return false;
 }
 
 
