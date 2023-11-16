@@ -24,15 +24,17 @@ document.addEventListener("DOMContentLoaded", function(){
         marcadorJugador+=puntosCarta;
         escribirPuntos(puntosJugador, marcadorJugador);
 
-
+    //si el jugador supera los 21 puntos, se desactiva su boton y pasa al turno de la computadora
         if (marcadorJugador >=21){
             btnPedir.disabled = true;
+            btnDetener.click();
         }
-
 
     });
 
 
+
+    //turno de computadora :
     btnDetener.addEventListener('click', function (){
         estado.innerText = "Turno de computadora";
         do {
@@ -41,47 +43,70 @@ document.addEventListener("DOMContentLoaded", function(){
             marcadorComputadora+=puntosCarta;
             escribirPuntos(puntosComputadora, marcadorComputadora);
 
-
-
-
-
         } while (marcadorComputadora <=21)
 
-        comprobarGanador(marcadorJugador, marcadorComputadora, estado);
+        //se comparan los marcadores y se escribe el estado, devuelve true o false
+        if (comprobarGanador(marcadorJugador, marcadorComputadora, estado)){
+            desactivarBotones(btnDetener,btnPedir);
+        }
+
     });
 
-
+    // se recarga la pagina
     btnNuevo.addEventListener('click', function(){
         location.reload();
     });
 
 
-    comprobarGanador(marcadorJugador, marcadorComputadora, estado);
 });
 
 
-
 function comprobarGanador (marcadorJugador, marcadorComputadora, estado){
-    if (marcadorJugador === 0){
+    //reglas para ganar
+
+    if (marcadorJugador === 0 && marcadorComputadora > 1) {
+        // NO se puede pulsar detener sin haber sacado cartas antes
+        estado.innerText = "Jugada invalidada. Pulsa NUEVO JUEGO";
+        return true;
+
+    } else if (marcadorJugador === 0){
+        // primer turno
         estado.innerText = "Turno Jugador 1";
-    } else if (marcadorJugador >= 21){
+        return false;
+
+    } else if (marcadorJugador >= 21 && marcadorJugador > marcadorComputadora){
+        //si los puntos del jugador son mayores a 21 y mayores a los de la computadora
         estado.innerText = "Pierde Jugador 1";
-    } else if (marcadorJugador < marcadorComputadora){
+        return true;
+
+    } else if (marcadorJugador < marcadorComputadora && marcadorComputadora > 21){
+        //si los puntos de la computadora son mayores que los del jugador, y mayores a 21
         estado.innerText = "Gana Jugador 1";
+        return true;
+
     } else {
+        // empate = gana computadora
         estado.innerText = "Gana Computadora";
+        return true;
     }
 }
 
+function desactivarBotones (btnDetener, btnPedir){
+    btnDetener.disabled=true;
+    btnPedir.disabled=true;
+}
+
 function generarBaraja(){
+    //valores
     const palos = "CDHS".split('');
     const figuras = "JQK".split('');
-    const ace = "A";
+    const ace = "A"; //no se usa la palabra "as" pq esta reservada
     const cartaMin = 2;
     const cartaMax = 10;
-
+    //baraja vacia
     let baraja = [];
 
+    //asignacion de valores
     for (const palo of palos){
         for (let carta = cartaMin; carta <= cartaMax ; carta++) {
             baraja.push(carta+palo);
@@ -94,6 +119,7 @@ function generarBaraja(){
         baraja.push(ace+palo);
     }
 
+    //la devuelve barajada
     return _.shuffle(baraja);
 }
 
@@ -107,13 +133,14 @@ function generarRutaImagen (carta){
 
 
 function calcularPuntosDeCarta (carta){
+    //se extrae el primer char
     const numeroCarta = carta.substring(0, carta.length-1);
     let valorCarta = parseInt(numeroCarta);
 
+    //si no es un numero, comprobar letra
     if(isNaN(valorCarta)){
         const letra = numeroCarta.toUpperCase();
-        console.log("letra?" + letra);
-
+        //asignar valor
         switch (letra){
             case 'A': return 11;
             case 'J':
@@ -126,40 +153,19 @@ function calcularPuntosDeCarta (carta){
     }
 }
 
-function calcularPuntosDeTodasLasCartas (cartaAnterior, cartaActual){
-    const puntosCartaAnterior = calcularPuntosDeCarta(cartaAnterior);
-    const puntosCartaActual = calcularPuntosDeCarta(cartaActual);
-
-    return puntosCartaAnterior + puntosCartaActual;
-}
-
-
 
 function repartirCarta (contenedor, baraja){
+    //saca la primera carta y la imprime en su contenedor
     const carta = baraja.shift();
     contenedor.append(generarRutaImagen(carta));
 
     return carta;
 }
 
-// function detener(btnPedir, btnDetener){
-//     btnPedir.disable();
-//     btnDetener.disable();
-// }
 
 function escribirPuntos (contenedor, puntos){
-    console.log("puntos> " + puntos);
-    console.log("contenedor> " + contenedor);
+    //escribe puntos en los marcadores
     contenedor.innerText = puntos;
 
 }
-
-function comprobarPuntos (puntos, elemento){
-    if (puntos >= 21){
-        elemento.innerText = "Has perdido";
-    }
-
-    return false;
-}
-
 
